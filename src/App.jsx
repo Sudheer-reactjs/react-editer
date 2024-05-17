@@ -15,7 +15,7 @@ const App = () => {
             color: '#000000',
             x: 50,
             y: 50,
-            width: 100,
+            width: 200,
             align: 'left',
             fontSize: 24
         }
@@ -34,7 +34,7 @@ const App = () => {
             color: color,
             x: 50,
             y: 50,
-            width: 500,
+            width: 200,
             align: 'center',
             fontSize: 24
         };
@@ -89,7 +89,8 @@ const App = () => {
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
             />
-            <Canvas
+            <Canvas 
+                width={500}
                 backgroundColor={backgroundColor}
                 images={images}
                 textElements={textElements}
