@@ -1,4 +1,3 @@
-// src/components/ControlPanel.js
 import React from 'react';
 
 const ControlPanel = ({
@@ -18,7 +17,10 @@ const ControlPanel = ({
 
     const handleColorChange = (e) => {
         if (selectedId && selectedId !== 'background') {
-            updateTextElement(selectedId, { color: e.target.value });
+            const selectedTextElement = textElements.find(textElement => textElement.id === selectedId);
+            if (selectedTextElement) {
+                updateTextElement(selectedId, { color: e.target.value });
+            }
         }
     };
 
@@ -40,6 +42,9 @@ const ControlPanel = ({
         addImage(file);
     };
 
+    // Safely access selected text element
+    const selectedTextElement = textElements.find(textElement => textElement.id === selectedId);
+
     return (
         <div className="control-panel">
             <label>
@@ -50,7 +55,7 @@ const ControlPanel = ({
                 Upload Image:
                 <input type="file" accept="image/*" onChange={handleImageUpload} />
             </label>
-            {selectedId && selectedId !== 'background' && (
+            {selectedId && selectedId !== 'background' && selectedTextElement && (
                 <div>
                     <h3>Selected Text Element {selectedId}</h3>
                     <label>
@@ -58,7 +63,7 @@ const ControlPanel = ({
                         <input
                             type="text"
                             name="text"
-                            value={textElements.find(textElement => textElement.id === selectedId).text}
+                            value={selectedTextElement.text}
                             onChange={(e) => handleInputChange(selectedId, e)}
                         />
                     </label>
@@ -67,14 +72,14 @@ const ControlPanel = ({
                         <input
                             type="color"
                             name="color"
-                            value={textElements.find(textElement => textElement.id === selectedId).color}
+                            value={selectedTextElement.color}
                             onChange={handleColorChange}
                         />
                     </label>
                     <label>
                         Font Family:
                         <select
-                            value={textElements.find(textElement => textElement.id === selectedId).fontFamily}
+                            value={selectedTextElement.fontFamily}
                             onChange={(e) => handleFontFamilyChange(selectedId, e)}
                         >
                             <option value="Arial">Arial</option>

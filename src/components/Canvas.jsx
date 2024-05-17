@@ -1,11 +1,17 @@
-// src/components/Canvas.jsx
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect, Text, Image as KonvaImage, Transformer } from 'react-konva';
-import useImage from 'use-image';
+
 
 const Canvas = ({ backgroundColor, images, textElements, updateTextElement, updateImage, selectedId, setSelectedId }) => {
     const stageRef = useRef(null);
     const transformerRef = useRef(null);
+    const [imageObjs, setImageObjs] = useState([]);
+
+    useEffect(() => {
+        setImageObjs(images.map(image => {
+            return { id: image.id, src: image.src, img: new window.Image() };
+        }));
+    }, [images]);
 
     useEffect(() => {
         if (selectedId) {
@@ -20,22 +26,28 @@ const Canvas = ({ backgroundColor, images, textElements, updateTextElement, upda
         }
     }, [selectedId, textElements, images]);
 
-    const imageComponents = images.map(image => {
-        const [img] = useImage(image.src);
+    useEffect(() => {
+        imageObjs.forEach(obj => {
+            obj.img.src = obj.src;
+            obj.img.onload = () => stageRef.current.batchDraw();
+        });
+    }, [imageObjs]);
+
+    const imageComponents = imageObjs.map(obj => {
         return (
             <KonvaImage
-                key={image.id}
-                id={`element-${image.id}`}
-                image={img}
-                x={image.x}
-                y={image.y}
-                width={image.width}
-                height={image.height}
+                key={obj.id}
+                id={`element-${obj.id}`}
+                image={obj.img}
+                x={images.find(image => image.id === obj.id).x}
+                y={images.find(image => image.id === obj.id).y}
+                width={images.find(image => image.id === obj.id).width}
+                height={images.find(image => image.id === obj.id).height}
                 draggable
-                onClick={() => setSelectedId(image.id)}
-                onTap={() => setSelectedId(image.id)}
+                onClick={() => setSelectedId(obj.id)}
+                onTap={() => setSelectedId(obj.id)}
                 onDragEnd={(e) => {
-                    updateImage(image.id, {
+                    updateImage(obj.id, {
                         x: e.target.x(),
                         y: e.target.y()
                     });
@@ -48,7 +60,7 @@ const Canvas = ({ backgroundColor, images, textElements, updateTextElement, upda
                     node.scaleX(1);
                     node.scaleY(1);
 
-                    updateImage(image.id, {
+                    updateImage(obj.id, {
                         x: node.x(),
                         y: node.y(),
                         width: Math.max(5, node.width() * scaleX),

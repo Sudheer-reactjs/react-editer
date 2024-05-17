@@ -15,7 +15,7 @@ const App = () => {
             color: '#000000',
             x: 50,
             y: 50,
-            width: 200,
+            width: 100,
             align: 'left',
             fontSize: 24
         }
