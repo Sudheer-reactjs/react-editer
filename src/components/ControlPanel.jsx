@@ -1,10 +1,9 @@
-// ControlPanel Component
+// src/components/ControlPanel.js
 import React from 'react';
 
 const ControlPanel = ({
     setBackgroundColor,
-    setBackgroundImage,
-    uploadBackgroundImage, // New prop for handling image upload
+    addImage,
     textElements,
     updateTextElement,
     addTextElement,
@@ -18,18 +17,18 @@ const ControlPanel = ({
     };
 
     const handleColorChange = (e) => {
-        if (selectedId) {
+        if (selectedId && selectedId !== 'background') {
             updateTextElement(selectedId, { color: e.target.value });
         }
     };
 
-    const handleFontFamilyChange = (id, e) => { 
+    const handleFontFamilyChange = (id, e) => {
         const fontFamily = e.target.value;
         updateTextElement(id, { fontFamily });
     };
 
     const handleDeleteTextElement = () => {
-        if (selectedId) {
+        if (selectedId && selectedId !== 'background') {
             const updatedTextElements = textElements.filter(textElement => textElement.id !== selectedId);
             deleteTextElement(updatedTextElements);
             setSelectedId(null);
@@ -38,8 +37,7 @@ const ControlPanel = ({
 
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
-        setBackgroundImage(file);
-        uploadBackgroundImage(file);
+        addImage(file);
     };
 
     return (
@@ -49,10 +47,10 @@ const ControlPanel = ({
                 <input type="color" onChange={(e) => setBackgroundColor(e.target.value)} />
             </label>
             <label>
-                Upload Background Image:
+                Upload Image:
                 <input type="file" accept="image/*" onChange={handleImageUpload} />
             </label>
-            {selectedId && (
+            {selectedId && selectedId !== 'background' && (
                 <div>
                     <h3>Selected Text Element {selectedId}</h3>
                     <label>
@@ -88,7 +86,7 @@ const ControlPanel = ({
                     <button onClick={handleDeleteTextElement}>Delete</button>
                 </div>
             )}
-            <button onClick={addTextElement} className='button'>Add Text Element</button>
+            <button onClick={addTextElement} className="button">Add Text Element</button>
         </div>
     );
 };

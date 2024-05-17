@@ -6,7 +6,7 @@ import './App.css';
 
 const App = () => {
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-    const [backgroundImage, setBackgroundImage] = useState(null); // Change to hold the image file
+    const [images, setImages] = useState([]);
     const [textElements, setTextElements] = useState([
         {
             id: 1,
@@ -39,7 +39,7 @@ const App = () => {
             fontSize: 24
         };
         setTextElements([...textElements, newTextElement]);
-        setSelectedId(textElements.length + 1);
+        setSelectedId(newTextElement.id);
     };
 
     const updateTextElement = (id, newTextProperties) => {
@@ -53,17 +53,36 @@ const App = () => {
         setSelectedId(null);
     };
 
-    const uploadBackgroundImage = (imageFile) => {
-        setBackgroundImage(imageFile);
+    const addImage = (imageFile) => {
+        const newImage = {
+            id: images.length + 1,
+            src: URL.createObjectURL(imageFile),
+            x: 50,
+            y: 50,
+            width: 200,
+            height: 200
+        };
+        setImages([...images, newImage]);
+        setSelectedId(newImage.id);
+    };
+
+    const updateImage = (id, newImageProperties) => {
+        setImages(images.map(image =>
+            image.id === id ? { ...image, ...newImageProperties } : image
+        ));
+    };
+
+    const deleteImage = (updatedImages) => {
+        setImages(updatedImages);
+        setSelectedId(null);
     };
 
     return (
         <div className="app">
             <ControlPanel
-                textElements={textElements}
+                textElements={textElements} 
                 setBackgroundColor={setBackgroundColor}
-                setBackgroundImage={setBackgroundImage}
-                uploadBackgroundImage={uploadBackgroundImage} // Pass the upload handler
+                addImage={addImage}
                 updateTextElement={updateTextElement}
                 addTextElement={addTextElement}
                 deleteTextElement={deleteTextElement}
@@ -72,9 +91,10 @@ const App = () => {
             />
             <Canvas
                 backgroundColor={backgroundColor}
-                backgroundImage={backgroundImage}
+                images={images}
                 textElements={textElements}
                 updateTextElement={updateTextElement}
+                updateImage={updateImage}
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
             />
@@ -82,4 +102,4 @@ const App = () => {
     );
 };
 
-export default App; 
+export default App;

@@ -1,16 +1,15 @@
-// src/components/Canvas.js
+// src/components/Canvas.jsx
 import React, { useRef, useEffect } from 'react';
-import { Stage, Layer, Rect, Text, Image, Transformer } from 'react-konva';
+import { Stage, Layer, Rect, Text, Image as KonvaImage, Transformer } from 'react-konva';
 import useImage from 'use-image';
 
-const Canvas = ({ backgroundColor, backgroundImage, textElements, updateTextElement, selectedId, setSelectedId }) => {
+const Canvas = ({ backgroundColor, images, textElements, updateTextElement, updateImage, selectedId, setSelectedId }) => {
     const stageRef = useRef(null);
     const transformerRef = useRef(null);
-    const [image] = useImage(backgroundImage);
 
     useEffect(() => {
         if (selectedId) {
-            const selectedNode = stageRef.current.findOne(`#text-${selectedId}`);
+            const selectedNode = stageRef.current.findOne(`#element-${selectedId}`);
             if (selectedNode) {
                 transformerRef.current.nodes([selectedNode]);
                 transformerRef.current.getLayer().batchDraw();
@@ -19,7 +18,87 @@ const Canvas = ({ backgroundColor, backgroundImage, textElements, updateTextElem
             transformerRef.current.nodes([]);
             transformerRef.current.getLayer().batchDraw();
         }
-    }, [selectedId, textElements]);
+    }, [selectedId, textElements, images]);
+
+    const imageComponents = images.map(image => {
+        const [img] = useImage(image.src);
+        return (
+            <KonvaImage
+                key={image.id}
+                id={`element-${image.id}`}
+                image={img}
+                x={image.x}
+                y={image.y}
+                width={image.width}
+                height={image.height}
+                draggable
+                onClick={() => setSelectedId(image.id)}
+                onTap={() => setSelectedId(image.id)}
+                onDragEnd={(e) => {
+                    updateImage(image.id, {
+                        x: e.target.x(),
+                        y: e.target.y()
+                    });
+                }}
+                onTransformEnd={(e) => {
+                    const node = e.target;
+                    const scaleX = node.scaleX();
+                    const scaleY = node.scaleY();
+
+                    node.scaleX(1);
+                    node.scaleY(1);
+
+                    updateImage(image.id, {
+                        x: node.x(),
+                        y: node.y(),
+                        width: Math.max(5, node.width() * scaleX),
+                        height: Math.max(5, node.height() * scaleY)
+                    });
+                }}
+            />
+        );
+    });
+
+    const textComponents = textElements.map(textElement => (
+        <Text
+            key={textElement.id}
+            id={`element-${textElement.id}`}
+            text={textElement.text}
+            fontFamily={textElement.fontFamily}
+            fill={textElement.color}
+            x={textElement.x}
+            y={textElement.y}
+            width={textElement.width}
+            align={textElement.align}
+            fontSize={textElement.fontSize}
+            draggable
+            onClick={() => setSelectedId(textElement.id)}
+            onTap={() => setSelectedId(textElement.id)}
+            onDragEnd={(e) => {
+                updateTextElement(textElement.id, {
+                    x: e.target.x(),
+                    y: e.target.y()
+                });
+            }}
+            onTransformEnd={(e) => {
+                const node = e.target;
+                const scaleX = node.scaleX();
+                const scaleY = node.scaleY();
+
+                node.scaleX(1);
+                node.scaleY(1);
+
+                const newFontSize = Math.max(5, textElement.fontSize * scaleY);
+
+                updateTextElement(textElement.id, {
+                    x: node.x(),
+                    y: node.y(),
+                    width: Math.max(5, node.width() * scaleX),
+                    fontSize: newFontSize
+                });
+            }}
+        />
+    ));
 
     return (
         <Stage
@@ -38,56 +117,8 @@ const Canvas = ({ backgroundColor, backgroundImage, textElements, updateTextElem
                     height={window.innerHeight}
                     fill={backgroundColor}
                 />
-                {image && (
-                    <Image
-                        image={image}
-                        width={window.innerWidth}
-                        height={window.innerHeight}
-                    />
-                )}
-                {textElements.map(textElement => (
-                    <Text
-                        key={textElement.id}
-                        id={`text-${textElement.id}`}
-                        text={textElement.text}
-                        fontFamily={textElement.fontFamily}
-                        fill={textElement.color}
-                        x={textElement.x}
-                        y={textElement.y}
-                        width={textElement.width}
-                        align={textElement.align}
-                        fontSize={textElement.fontSize} // Ensure fontSize is correctly applied
-                        draggable
-                        onClick={() => setSelectedId(textElement.id)}
-                        onTap={() => setSelectedId(textElement.id)}
-                        onDragEnd={(e) => {
-                            updateTextElement(textElement.id, {
-                                x: e.target.x(),
-                                y: e.target.y()
-                            });
-                        }}
-                        onTransformEnd={(e) => {
-                            const node = e.target;
-                            const scaleX = node.scaleX();
-                            const scaleY = node.scaleY();
-
-                            // Reset the scale to avoid distortion
-                            node.scaleX(1);
-                            node.scaleY(1);
-
-                            // Calculate the new font size based on the scale
-                            const newFontSize = Math.max(5, textElement.fontSize * scaleY);
-
-                            // Update the text element with the new properties
-                            updateTextElement(textElement.id, {
-                                x: node.x(),
-                                y: node.y(),
-                                width: Math.max(5, node.width() * scaleX),
-                                fontSize: newFontSize
-                            });
-                        }}
-                    />
-                ))}
+                {imageComponents}
+                {textComponents}
                 <Transformer ref={transformerRef} />
             </Layer>
         </Stage>
