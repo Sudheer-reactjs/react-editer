@@ -8,8 +8,15 @@ const ControlPanel = ({
     addTextElement,
     deleteTextElement,
     selectedId,
-    setSelectedId
+    setSelectedId,
+    saveCanvasAsImage,
+    setCanvasSize // Receive setCanvasSize function
 }) => {
+    const handleCanvasSizeChange = (e) => {
+        const size = e.target.value.split('x');
+        setCanvasSize({ width: parseInt(size[0]), height: parseInt(size[1]) });
+    };
+
     const handleInputChange = (id, e) => {
         const { name, value } = e.target;
         updateTextElement(id, { [name]: value });
@@ -20,7 +27,7 @@ const ControlPanel = ({
             const selectedTextElement = textElements.find(textElement => textElement.id === selectedId);
             if (selectedTextElement) {
                 updateTextElement(selectedId, { color: e.target.value });
-            }
+            }  
         }
     };
 
@@ -48,8 +55,16 @@ const ControlPanel = ({
     return (
         <div className="control-panel">
             <label>
+                Canvas Size:
+                <select onChange={handleCanvasSizeChange}>
+                    <option value="500x700">Default (500x700)</option>
+                    <option value="800x600">Custom (800x600)</option>
+                    {/* Add more options as needed */}
+                </select>
+            </label>
+            <label>
                 Background Color:
-                <input type="color" onChange={(e) => setBackgroundColor(e.target.value)} />
+                <input type="color" value="#ebecf0" onChange={(e) => setBackgroundColor(e.target.value)} />
             </label>
             <label>
                 Upload Image:
@@ -92,6 +107,7 @@ const ControlPanel = ({
                 </div>
             )}
             <button onClick={addTextElement} className="button">Add Text Element</button>
+            <button onClick={saveCanvasAsImage} className="button">Save as Image</button>
         </div>
     );
 };

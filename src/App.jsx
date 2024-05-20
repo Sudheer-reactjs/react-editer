@@ -1,37 +1,33 @@
-// App Component
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Canvas from './components/Canvas';
 import ControlPanel from './components/ControlPanel';
+import html2canvas from 'html2canvas';
 import './App.css';
 
+const saveCanvasAsImage = (stageRef) => {
+    const stage = stageRef.current;
+    html2canvas(stage.container()).then((canvas) => {
+        const url = canvas.toDataURL();
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'canvas.png';
+        link.click();
+    });
+};
+
 const App = () => {
-    const [backgroundColor, setBackgroundColor] = useState('#ffffff');
+    const [backgroundColor, setBackgroundColor] = useState('#ebecf0');
     const [images, setImages] = useState([]);
-    const [textElements, setTextElements] = useState([
-        {
-            id: 1,
-            text: '',
-            fontFamily: 'Arial',
-            color: '#000000',
-            x: 50,
-            y: 50,
-            width: 200,
-            align: 'left',
-            fontSize: 24
-        }
-    ]);
+    const [textElements, setTextElements] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
+    const [canvasSize, setCanvasSize] = useState({ width: 500, height: 700 }); // Default canvas size
 
     const addTextElement = () => {
-        const colors = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'];
-        const colorIndex = Math.floor(Math.random() * colors.length);
-        const color = colors[colorIndex];
-
         const newTextElement = {
             id: textElements.length + 1,
             text: 'Your Text',
             fontFamily: 'Arial',
-            color: color,
+            color: '#000000',
             x: 50,
             y: 50,
             width: 200,
@@ -48,7 +44,8 @@ const App = () => {
         ));
     };
 
-    const deleteTextElement = (updatedTextElements) => {
+    const deleteTextElement = (id) => {
+        const updatedTextElements = textElements.filter(textElement => textElement.id !== id);
         setTextElements(updatedTextElements);
         setSelectedId(null);
     };
@@ -72,15 +69,12 @@ const App = () => {
         ));
     };
 
-    const deleteImage = (updatedImages) => {
-        setImages(updatedImages);
-        setSelectedId(null);
-    };
+    const stageRef = useRef(null);
 
     return (
         <div className="app">
             <ControlPanel
-                textElements={textElements} 
+                textElements={textElements}
                 setBackgroundColor={setBackgroundColor}
                 addImage={addImage}
                 updateTextElement={updateTextElement}
@@ -88,16 +82,20 @@ const App = () => {
                 deleteTextElement={deleteTextElement}
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
+                saveCanvasAsImage={() => saveCanvasAsImage(stageRef)}
+                setCanvasSize={setCanvasSize} // Pass setCanvasSize function
             />
-            <Canvas 
-                width={500}
-                backgroundColor={backgroundColor}
-                images={images}
-                textElements={textElements}
-                updateTextElement={updateTextElement}
-                updateImage={updateImage}
-                selectedId={selectedId}
-                setSelectedId={setSelectedId}
+            <Canvas
+               width={canvasSize.width}
+               height={canvasSize.height}
+               backgroundColor={backgroundColor}
+               images={images}
+               textElements={textElements}
+               updateTextElement={updateTextElement}
+               updateImage={updateImage}
+               selectedId={selectedId}
+               setSelectedId={setSelectedId}
+               stageRef={stageRef}
             />
         </div>
     );
